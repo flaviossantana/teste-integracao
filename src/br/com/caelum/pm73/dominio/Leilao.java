@@ -14,15 +14,23 @@ import javax.persistence.OneToMany;
 @Entity
 public class Leilao {
 
-	@Id @GeneratedValue
+	@Id
+	@GeneratedValue
 	private int id;
+
 	private String nome;
+
 	private Double valorInicial;
+
 	@ManyToOne
 	private Usuario dono;
+
 	private Calendar dataAbertura;
+
 	private boolean usado;
+
 	private boolean encerrado;
+
 	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true, mappedBy="leilao")
 	private List<Lance> lances;
 	

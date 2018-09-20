@@ -10,12 +10,17 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Lance {
 
-	@Id @GeneratedValue
+	@Id
+	@GeneratedValue
 	private int id;
+
 	private double valor;
+
 	private Calendar data;
+
 	@ManyToOne
 	private Usuario usuario;
+
 	@ManyToOne
 	private Leilao leilao;
 	
