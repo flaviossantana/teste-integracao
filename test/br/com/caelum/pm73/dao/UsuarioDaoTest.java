@@ -21,10 +21,11 @@ public class UsuarioDaoTest {
 
         Usuario usuario = usuarioDao.porNomeEEmail(NOME_JOÃO_DA_SILVA, EMAIL_JOAO);
 
+        Assert.assertNull(usuario);
         Assert.assertEquals(usuario.getNome(), novoUsuario.getNome());
         Assert.assertEquals(usuario.getEmail(), novoUsuario.getEmail());
 
-
+        session.close();
 
     }
 
