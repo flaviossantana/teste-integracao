@@ -16,10 +16,13 @@ public class UsuarioDaoTest {
         Session session = new CriadorDeSessao().getSession();
         UsuarioDao usuarioDao = new UsuarioDao(session);
 
+        Usuario novoUsuario = new Usuario(NOME_JOÃO_DA_SILVA, EMAIL_JOAO);
+        usuarioDao.salvar(novoUsuario);
+
         Usuario usuario = usuarioDao.porNomeEEmail(NOME_JOÃO_DA_SILVA, EMAIL_JOAO);
 
-        Assert.assertEquals(usuario.getNome(), "");
-        Assert.assertEquals(usuario.getEmail(), "");
+        Assert.assertEquals(usuario.getNome(), novoUsuario.getNome());
+        Assert.assertEquals(usuario.getEmail(), novoUsuario.getEmail());
 
 
 
