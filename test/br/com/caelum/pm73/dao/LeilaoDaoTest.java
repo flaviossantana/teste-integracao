@@ -8,7 +8,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.xml.bind.ValidationEvent;
 import java.util.Calendar;
 import java.util.List;
 
