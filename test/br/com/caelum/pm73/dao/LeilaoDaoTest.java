@@ -136,5 +136,60 @@ public class LeilaoDaoTest {
 
     }
 
+    @Test
+    public void buscarLeiloesNaoEncerradosNoPeriodo(){
+
+        Calendar inicio = Calendar.getInstance();
+        inicio.add(Calendar.DAY_OF_MONTH, -10);
+
+        Calendar fim = Calendar.getInstance();
+
+        Usuario flavioSantana = new Usuario("Flavio Santana", "meu@email.com");
+
+        Leilao leilaoXbox = new Leilao("XBOX", 1.700, flavioSantana, false);
+        Calendar dataAnertura = Calendar.getInstance();
+        dataAnertura.add(Calendar.DAY_OF_MONTH, -2);
+        leilaoXbox.setDataAbertura(dataAnertura);
+
+        Leilao leilaoPs4 = new Leilao("PS4", 1.700, flavioSantana, false);
+        Calendar dataAbertura = Calendar.getInstance();
+        dataAnertura.add(Calendar.DAY_OF_MONTH, -20);
+        leilaoPs4.setDataAbertura(dataAbertura);
+
+        usuarioDao.salvar(flavioSantana);
+        leilaoDao.salvar(leilaoPs4);
+        leilaoDao.salvar(leilaoXbox);
+
+        List<Leilao> leilaos = leilaoDao.porPeriodo(inicio, fim);
+
+        Assert.assertEquals(1, leilaos.size());
+        Assert.assertEquals("PS4", leilaos.get(0).getNome());
+
+
+    }
+
+    @Test
+    public void naoDeveTrazerLeilaoEncerradoNoperiodo(){
+
+        Calendar inicio = Calendar.getInstance();
+        inicio.add(Calendar.DAY_OF_MONTH, -10);
+
+        Calendar fim = Calendar.getInstance();
+
+        Usuario flavioSantana = new Usuario("Flavio Santana", "meu@email.com");
+
+        Leilao leilaoXbox = new Leilao("XBOX", 1.700, flavioSantana, false);
+        Calendar dataAnertura = Calendar.getInstance();
+        dataAnertura.add(Calendar.DAY_OF_MONTH, -2);
+        leilaoXbox.setDataAbertura(dataAnertura);
+
+        usuarioDao.salvar(flavioSantana);
+        leilaoDao.salvar(leilaoXbox);
+
+        List<Leilao> leilaos = leilaoDao.porPeriodo(inicio, fim);
+
+        Assert.assertEquals(1, leilaos.size());
+
+    }
 
 }
