@@ -1,5 +1,6 @@
 package br.com.caelum.pm73.dao;
 
+import br.com.caelum.pm73.builder.LeilaoBuilder;
 import br.com.caelum.pm73.dominio.Leilao;
 import br.com.caelum.pm73.dominio.Usuario;
 import org.hibernate.Session;
@@ -10,6 +11,8 @@ import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class LeilaoDaoTest {
 
@@ -46,7 +49,7 @@ public class LeilaoDaoTest {
 
         long total = leilaoDao.total();
 
-        Assert.assertEquals(total, 1L);
+        assertEquals(total, 1L);
 
     }
 
@@ -65,130 +68,202 @@ public class LeilaoDaoTest {
 
         long total = leilaoDao.total();
 
-        Assert.assertEquals(total, 1L);
+        assertEquals(total, 1L);
 
     }
 
     @Test
-    public void deveRetornarLeiloesDeProdutosNovos(){
+    public void deveContarLeiloesNaoEncerrados() {
+        // criamos um usuario
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
 
-        Usuario usuario = new Usuario("Flavio Santana", "meu@email.com");
+        // criamos os dois leiloes
 
-        Leilao geladeira = new Leilao("Geladeira", 1500.00, usuario, true);
-        Leilao xbox = new Leilao("Xbox", 800.00, usuario, false);
-        xbox.encerra();
+        Leilao ativo = new LeilaoBuilder()
+                .comDono(mauricio)
+                .constroi();
+        Leilao encerrado = new LeilaoBuilder()
+                .comDono(mauricio)
+                .encerrado()
+                .constroi();
 
-        usuarioDao.salvar(usuario);
-        leilaoDao.salvar(geladeira);
-        leilaoDao.salvar(xbox);
+        // persistimos todos no banco
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(ativo);
+        leilaoDao.salvar(encerrado);
+
+        // pedimos o total para o DAO
+        long total = leilaoDao.total();
+
+        assertEquals(1L, total);
+    }
+
+    @Test
+    public void deveRetornarZeroSeNaoHaLeiloesNovos() {
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
+
+        Leilao encerrado = new LeilaoBuilder()
+                .comDono(mauricio)
+                .encerrado()
+                .constroi();
+        Leilao tambemEncerrado = new LeilaoBuilder()
+                .comDono(mauricio)
+                .encerrado().constroi();
+
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(encerrado);
+        leilaoDao.salvar(tambemEncerrado);
+
+        long total = leilaoDao.total();
+
+        assertEquals(0L, total);
+    }
+
+    @Test
+    public void deveRetornarLeiloesDeProdutosNovos() {
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
+
+        Leilao produtoNovo =
+                new LeilaoBuilder()
+                        .comDono(mauricio)
+                        .comNome("XBox")
+                        .constroi();
+        Leilao produtoUsado =
+                new LeilaoBuilder().comNome("XBox")
+                        .comDono(mauricio)
+                        .usado()
+                        .constroi();
+
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(produtoNovo);
+        leilaoDao.salvar(produtoUsado);
 
         List<Leilao> novos = leilaoDao.novos();
 
-        Assert.assertEquals(novos.size(), 1);
-
+        assertEquals(1, novos.size());
+        assertEquals("XBox", novos.get(0).getNome());
     }
 
     @Test
-    public void leiloesAntigos(){
+    public void deveTrazerSomenteLeiloesAntigos() {
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
 
-        Usuario usuario = new Usuario("Flavio Santana", "meu@email.com");
+        Leilao recente = new LeilaoBuilder()
+                .comNome("XBox")
+                .comDono(mauricio)
+                .constroi();
+        Leilao antigo = new LeilaoBuilder()
+                .comDono(mauricio)
+                .comNome("Geladeira")
+                .diasAtras(10)
+                .constroi();
 
-        Leilao geladeira = new Leilao("Geladeira", 1500.00, usuario, true);
-        Calendar dataAntiga = Calendar.getInstance();
-        dataAntiga.add(Calendar.DAY_OF_MONTH, -10);
-        geladeira.setDataAbertura(dataAntiga);
-
-        Leilao xbox = new Leilao("Xbox", 800.00, usuario, false);
-        Calendar dataAtual = Calendar.getInstance();
-        xbox.setDataAbertura(dataAtual);
-
-        usuarioDao.salvar(usuario);
-        leilaoDao.salvar(geladeira);
-        leilaoDao.salvar(xbox);
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(recente);
+        leilaoDao.salvar(antigo);
 
         List<Leilao> antigos = leilaoDao.antigos();
 
-        Assert.assertEquals(antigos.size(), 1);
-
+        assertEquals(1, antigos.size());
+        assertEquals("Geladeira", antigos.get(0).getNome());
     }
 
     @Test
-    public void leiloesAntigoNoLimite(){
+    public void deveTrazerSomenteLeiloesAntigosHaMaisDe7Dias() {
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
 
-        Usuario usuario = new Usuario("Flavio Santana", "meu@email.com");
+        Leilao noLimite = new LeilaoBuilder()
+                .diasAtras(7)
+                .comDono(mauricio)
+                .constroi();
 
-        Leilao geladeira = new Leilao("Geladeira", 1500.00, usuario, true);
         Calendar dataAntiga = Calendar.getInstance();
         dataAntiga.add(Calendar.DAY_OF_MONTH, -7);
-        geladeira.setDataAbertura(dataAntiga);
 
-        Leilao xbox = new Leilao("Xbox", 800.00, usuario, false);
-        Calendar dataAtual = Calendar.getInstance();
-        xbox.setDataAbertura(dataAtual);
+        noLimite.setDataAbertura(dataAntiga);
 
-        usuarioDao.salvar(usuario);
-        leilaoDao.salvar(geladeira);
-        leilaoDao.salvar(xbox);
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(noLimite);
 
         List<Leilao> antigos = leilaoDao.antigos();
 
-        Assert.assertEquals(antigos.size(), 1);
-
+        assertEquals(1, antigos.size());
     }
 
     @Test
-    public void buscarLeiloesNaoEncerradosNoPeriodo(){
+    public void deveTrazerLeiloesNaoEncerradosNoPeriodo() {
 
-        Calendar inicio = Calendar.getInstance();
-        inicio.add(Calendar.DAY_OF_MONTH, -10);
+        // criando as datas
+        Calendar comecoDoIntervalo = Calendar.getInstance();
+        comecoDoIntervalo.add(Calendar.DAY_OF_MONTH, -10);
+        Calendar fimDoIntervalo = Calendar.getInstance();
 
-        Calendar fim = Calendar.getInstance();
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
 
-        Usuario flavioSantana = new Usuario("Flavio Santana", "meu@email.com");
+        // criando os leiloes, cada um com uma data
+        Leilao leilao1 = new LeilaoBuilder()
+                .diasAtras(2)
+                .comDono(mauricio)
+                .comNome("XBox")
+                .constroi();
 
-        Leilao leilaoXbox = new Leilao("XBOX", 1.700, flavioSantana, false);
-        Calendar dataAnertura = Calendar.getInstance();
-        dataAnertura.add(Calendar.DAY_OF_MONTH, -2);
-        leilaoXbox.setDataAbertura(dataAnertura);
+        Leilao leilao2 = new LeilaoBuilder()
+                .diasAtras(20)
+                .comDono(mauricio)
+                .comNome("XBox")
+                .constroi();
 
-        Leilao leilaoPs4 = new Leilao("PS4", 1.700, flavioSantana, false);
-        Calendar dataAbertura = Calendar.getInstance();
-        dataAnertura.add(Calendar.DAY_OF_MONTH, -20);
-        leilaoPs4.setDataAbertura(dataAbertura);
+        // persistindo os objetos no banco
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(leilao1);
+        leilaoDao.salvar(leilao2);
 
-        usuarioDao.salvar(flavioSantana);
-        leilaoDao.salvar(leilaoPs4);
-        leilaoDao.salvar(leilaoXbox);
+        // invocando o metodo para testar
+        List<Leilao> leiloes =
+                leilaoDao.porPeriodo(comecoDoIntervalo, fimDoIntervalo);
 
-        List<Leilao> leilaos = leilaoDao.porPeriodo(inicio, fim);
-
-        Assert.assertEquals(1, leilaos.size());
-        Assert.assertEquals("PS4", leilaos.get(0).getNome());
-
-
+        // garantindo que a query funcionou
+        assertEquals(1, leiloes.size());
+        assertEquals("XBox", leiloes.get(0).getNome());
     }
 
     @Test
     public void naoDeveTrazerLeilaoEncerradoNoperiodo(){
 
-        Calendar inicio = Calendar.getInstance();
-        inicio.add(Calendar.DAY_OF_MONTH, -10);
+        // criando as datas
+        Calendar comecoDoIntervalo = Calendar.getInstance();
+        comecoDoIntervalo.add(Calendar.DAY_OF_MONTH, -10);
+        Calendar fimDoIntervalo = Calendar.getInstance();
+        Calendar dataDoLeilao1 = Calendar.getInstance();
+        dataDoLeilao1.add(Calendar.DAY_OF_MONTH, -2);
 
-        Calendar fim = Calendar.getInstance();
+        Usuario mauricio = new Usuario("Mauricio Aniche",
+                "mauricio@aniche.com.br");
 
-        Usuario flavioSantana = new Usuario("Flavio Santana", "meu@email.com");
+        // criando os leiloes, cada um com uma data
+        Leilao leilao1 = new LeilaoBuilder()
+                .comDono(mauricio)
+                .diasAtras(2)
+                .comNome("XBox")
+                .encerrado()
+                .constroi();
 
-        Leilao leilaoXbox = new Leilao("XBOX", 1.700, flavioSantana, false);
-        Calendar dataAnertura = Calendar.getInstance();
-        dataAnertura.add(Calendar.DAY_OF_MONTH, -2);
-        leilaoXbox.setDataAbertura(dataAnertura);
+        // persistindo os objetos no banco
+        usuarioDao.salvar(mauricio);
+        leilaoDao.salvar(leilao1);
 
-        usuarioDao.salvar(flavioSantana);
-        leilaoDao.salvar(leilaoXbox);
+        // invocando o metodo para testar
+        List<Leilao> leiloes =
+                leilaoDao.porPeriodo(comecoDoIntervalo, fimDoIntervalo);
 
-        List<Leilao> leilaos = leilaoDao.porPeriodo(inicio, fim);
-
-        Assert.assertEquals(1, leilaos.size());
+        // garantindo que a query funcionou
+        assertEquals(0, leiloes.size());
 
     }
 
