@@ -1,6 +1,7 @@
 package br.com.caelum.pm73.dao;
 
 import br.com.caelum.pm73.builder.LeilaoBuilder;
+import br.com.caelum.pm73.dominio.Lance;
 import br.com.caelum.pm73.dominio.Leilao;
 import br.com.caelum.pm73.dominio.Usuario;
 import org.hibernate.Session;
@@ -247,6 +248,30 @@ public class LeilaoDaoTest {
 
         // garantindo que a query funcionou
         assertEquals(0, leiloes.size());
+
+    }
+
+    @Test
+    public void disputadosEntre(){
+
+        Usuario mauricio = new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+        Usuario interessadoUm = new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+
+        Leilao leilao = builder.comNome("XBOX").comValor(1000).comDono(mauricio)
+                .comLance(Calendar.getInstance(), interessadoUm, 750.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 950.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 999.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 1001.00)
+                .constroi();
+
+        usuarioDao.salvar(mauricio);
+        usuarioDao.salvar(interessadoUm);
+        leilaoDao.salvar(leilao);
+
+        List<Leilao> leiloes = leilaoDao.disputadosEntre(800.00, 1001.00);
+
+        assertEquals(1, leiloes.size());
+        assertEquals(1000.0, leiloes.get(0).getValorInicial(), 0.00001);
 
     }
 
