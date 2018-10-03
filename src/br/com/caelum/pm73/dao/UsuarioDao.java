@@ -1,5 +1,7 @@
 package br.com.caelum.pm73.dao;
 
+import br.com.caelum.pm73.dominio.Leilao;
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 
 import br.com.caelum.pm73.dominio.Usuario;
@@ -13,7 +15,11 @@ public class UsuarioDao {
 	}
 	
 	public Usuario porId(int id) {
-		return (Usuario) session.load(Usuario.class, id);
+		try {
+			return (Usuario) session.get(Usuario.class, id);
+		} catch (ObjectNotFoundException obj){
+			return null;
+		}
 	}
 	
 	public Usuario porNomeEEmail(String nome, String email) {

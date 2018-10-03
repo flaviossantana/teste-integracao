@@ -3,6 +3,7 @@ package br.com.caelum.pm73.dao;
 import java.util.Calendar;
 import java.util.List;
 
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 
 import br.com.caelum.pm73.dominio.Lance;
@@ -26,7 +27,11 @@ public class LeilaoDao {
 	}
 	
 	public Leilao porId(int id) {
-		return (Leilao) session.get(Leilao.class, id);
+		try {
+			return (Leilao) session.get(Leilao.class, id);
+		} catch (ObjectNotFoundException obj){
+			return null;
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

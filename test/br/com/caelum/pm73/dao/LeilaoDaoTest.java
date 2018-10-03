@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class LeilaoDaoTest {
 
@@ -326,6 +327,40 @@ public class LeilaoDaoTest {
         Double valorInicialMedioDoUsuario = leilaoDao.getValorInicialMedioDoUsuario(interessadoUm);
 
         assertEquals(550.00, valorInicialMedioDoUsuario,0.00001);
+
+    }
+
+
+    @Test
+    public void deveDeletarUmUsuario() {
+        Usuario usuario =
+                new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+
+        usuarioDao.salvar(usuario);
+        usuarioDao.deletar(usuario);
+
+        session.flush();
+        session.clear();
+
+        Usuario usuarioNoBanco =
+                usuarioDao.porNomeEEmail("Mauricio Aniche", "mauricio@aniche.com.br");
+
+        assertNull(usuarioNoBanco);
+
+    }
+
+    @Test
+    public void porId() {
+        Usuario usuario =
+                new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+
+        usuarioDao.salvar(usuario);
+        usuarioDao.deletar(usuario);
+
+        session.flush();
+        session.clear();
+
+        assertNull(usuarioDao.porId(usuario.getId()));
 
     }
 
