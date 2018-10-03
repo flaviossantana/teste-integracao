@@ -296,6 +296,36 @@ public class LeilaoDaoTest {
 
         assertEquals(1, leiloes.size());
 
+    }
+
+    @Test
+    public void getValorInicialMedioDoUsuario(){
+
+        Usuario mauricio = new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+        Usuario interessadoUm = new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+
+        Leilao leilaoXbox = new LeilaoBuilder().comNome("XBOX").comValor(1000.00).comDono(mauricio)
+                .comLance(Calendar.getInstance(), interessadoUm, 750.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 950.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 999.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 1001.00)
+                .constroi();
+
+        Leilao leilaoPs4 = new LeilaoBuilder().comNome("PS4").comValor(100.00).comDono(mauricio)
+                .comLance(Calendar.getInstance(), interessadoUm, 750.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 950.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 999.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 1001.00)
+                .constroi();
+
+        usuarioDao.salvar(mauricio);
+        usuarioDao.salvar(interessadoUm);
+        leilaoDao.salvar(leilaoXbox);
+        leilaoDao.salvar(leilaoPs4);
+
+        Double valorInicialMedioDoUsuario = leilaoDao.getValorInicialMedioDoUsuario(interessadoUm);
+
+        assertEquals(550.00, valorInicialMedioDoUsuario,0.00001);
 
     }
 
