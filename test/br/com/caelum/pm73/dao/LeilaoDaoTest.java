@@ -275,4 +275,28 @@ public class LeilaoDaoTest {
 
     }
 
+    @Test
+    public void listaLeiloesDoUsuario(){
+
+        Usuario mauricio = new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+        Usuario interessadoUm = new Usuario("Mauricio Aniche", "mauricio@aniche.com.br");
+
+        Leilao leilao = builder.comNome("XBOX").comValor(1000).comDono(mauricio)
+                .comLance(Calendar.getInstance(), interessadoUm, 750.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 950.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 999.00)
+                .comLance(Calendar.getInstance(), interessadoUm, 1001.00)
+                .constroi();
+
+        usuarioDao.salvar(mauricio);
+        usuarioDao.salvar(interessadoUm);
+        leilaoDao.salvar(leilao);
+
+        List<Leilao> leiloes = leilaoDao.listaLeiloesDoUsuario(interessadoUm);
+
+        assertEquals(1, leiloes.size());
+
+
+    }
+
 }
